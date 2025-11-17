@@ -25,12 +25,23 @@ export const TaskModal: React.FC<TaskModalProps> = ({ task, onClose }) => {
 
   useEffect(() => {
     if (task) {
+      // Ensure we set the assignedTo ID correctly
+      const assignedToId = task.assignedTo?.id || '';
+      
       setFormData({
-        name: task.name,
-        description: task.description,
-        assignedTo: task.assignedTo.id,
+        name: task.name || '',
+        description: task.description || '',
+        assignedTo: assignedToId,
+      });
+    } else {
+      // Reset form when creating new task
+      setFormData({
+        name: '',
+        description: '',
+        assignedTo: '',
       });
     }
+    setError(''); // Clear any previous errors
   }, [task]);
 
   const createMutation = useMutation({
@@ -128,6 +139,11 @@ export const TaskModal: React.FC<TaskModalProps> = ({ task, onClose }) => {
                 </option>
               ))}
             </select>
+            {task && !formData.assignedTo && members.length > 0 && (
+              <small style={{ color: '#ef4444', marginTop: '0.25rem', display: 'block' }}>
+                Note: Previously assigned user may not be in the members list
+              </small>
+            )}
           </div>
 
           <div className="modal-actions">
