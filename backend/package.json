@@ -16,6 +16,9 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
+    "test:cov:html": "jest --coverage --coverageReporters=html",
+    "test:cov:report": "jest --coverage --coverageReporters=text --coverageReporters=text-summary",
+    "test:cov:only": "jest --coverage --coverageThreshold='{}'",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed": "ts-node -r tsconfig-paths/register src/seeders/seed.ts"
@@ -73,9 +76,40 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "**/*.(t|j)s",
+      "!**/*.spec.ts",
+      "!**/*.interface.ts",
+      "!**/*.dto.ts",
+      "!**/*.entity.ts",
+      "!**/*.enum.ts",
+      "!**/main.ts",
+      "!**/seed.ts",
+      "!**/*.seeder.ts",
+      "!**/*.module.ts"
     ],
     "coverageDirectory": "../coverage",
+    "coverageReporters": [
+      "text",
+      "text-summary",
+      "html",
+      "lcov",
+      "json"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 30,
+        "functions": 45,
+        "lines": 47,
+        "statements": 50
+      }
+    },
+    "moduleNameMapper": {
+      "^src/(.*)$": "<rootDir>/$1",
+      "^@nestjs/(.*)$": "<rootDir>/../node_modules/@nestjs/$1"
+    },
+    "transformIgnorePatterns": [
+      "node_modules/(?!(@nestjs)/)"
+    ],
     "testEnvironment": "node"
   }
 }
