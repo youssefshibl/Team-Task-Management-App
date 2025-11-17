@@ -1,18 +1,26 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Box } from '@chakra-ui/react';
 import { tasksApi } from '../api/tasks';
+import { authApi } from '../api/auth';
 import { useAuth } from '../context/AuthContext';
-import { Task } from '../types';
+import { SearchableMemberSelect } from '../components/SearchableMemberSelect';
 import '../styles/MemberDashboard.css';
 
 export const MemberDashboard: React.FC = () => {
   const { user, logout } = useAuth();
   const queryClient = useQueryClient();
   const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [selectedLeader, setSelectedLeader] = useState<string>('');
 
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ['assigned-tasks'],
     queryFn: tasksApi.getAssignedTasks,
+  });
+
+  const { data: leaders = [] } = useQuery({
+    queryKey: ['leaders'],
+    queryFn: authApi.getLeaders,
   });
 
   const updateStatusMutation = useMutation({
@@ -27,9 +35,12 @@ export const MemberDashboard: React.FC = () => {
     updateStatusMutation.mutate({ id: taskId, status });
   };
 
-  const filteredTasks = selectedStatus
-    ? tasks.filter((task) => task.status === selectedStatus)
-    : tasks;
+  // Filter tasks by status and team leader
+  const filteredTasks = tasks.filter((task) => {
+    const matchesStatus = !selectedStatus || task.status === selectedStatus;
+    const matchesLeader = !selectedLeader || task.assignedBy.id === selectedLeader;
+    return matchesStatus && matchesLeader;
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -74,15 +85,62 @@ export const MemberDashboard: React.FC = () => {
               <option value="done">Done</option>
             </select>
           </div>
+          <div className="filter-group">
+            <label htmlFor="leader-filter">Filter by Team Leader:</label>
+            <Box>
+              <SearchableMemberSelect
+                members={leaders}
+                selectedMemberId={selectedLeader}
+                onSelect={setSelectedLeader}
+                placeholder="All Leaders"
+              />
+            </Box>
+          </div>
+          {(selectedStatus || selectedLeader) && (
+            <div className="filter-info">
+              Showing {filteredTasks.length} of {tasks.length} tasks
+            </div>
+          )}
+          {(selectedStatus || selectedLeader) && (
+            <button
+              className="btn btn-secondary btn-clear-filters"
+              onClick={() => {
+                setSelectedStatus('');
+                setSelectedLeader('');
+              }}
+            >
+              Clear Filters
+            </button>
+          )}
         </div>
 
         {isLoading ? (
           <div className="loading">Loading tasks...</div>
         ) : (
           <div className="tasks-grid">
-            {filteredTasks.length === 0 ? (
+            {tasks.length === 0 ? (
               <div className="empty-state">
                 <p>No tasks assigned to you yet.</p>
+              </div>
+            ) : filteredTasks.length === 0 ? (
+              <div className="empty-state">
+                <p>
+                  No tasks found
+                  {selectedStatus && ` with status "${selectedStatus.replace('_', ' ')}"`}
+                  {selectedStatus && selectedLeader && ' and'}
+                  {selectedLeader && ` assigned by "${leaders.find((l) => l.id === selectedLeader)?.name || 'selected leader'}"`}
+                  .
+                </p>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setSelectedStatus('');
+                    setSelectedLeader('');
+                  }}
+                  style={{ marginTop: '1rem' }}
+                >
+                  Clear Filters
+                </button>
               </div>
             ) : (
               filteredTasks.map((task) => (

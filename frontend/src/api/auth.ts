@@ -37,5 +37,10 @@ export const authApi = {
     const { data } = await apiClient.get<ApiResponse<User[]>>('/auth/members');
     return (data.data || []).map(normalizeUser);
   },
+
+  getLeaders: async (): Promise<User[]> => {
+    const { data } = await apiClient.get<ApiResponse<User[]>>('/auth/leaders');
+    return (data.data || []).map(normalizeUser);
+  },
 };
 

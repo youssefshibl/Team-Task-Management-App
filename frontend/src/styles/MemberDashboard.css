@@ -36,6 +36,14 @@
 
 .filters {
   margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding: 1rem;
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow);
 }
 
 .filter-group {
@@ -47,6 +55,7 @@
 .filter-group label {
   font-weight: 500;
   color: var(--text-primary);
+  font-size: 0.875rem;
 }
 
 .filter-select {
@@ -55,6 +64,27 @@
   border-radius: 0.5rem;
   font-size: 1rem;
   background: white;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.filter-info {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  background: var(--bg-color);
+  border-radius: 0.5rem;
+}
+
+.btn-clear-filters {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  margin-left: auto;
 }
 
 .tasks-grid {
