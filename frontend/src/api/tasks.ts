@@ -76,7 +76,11 @@ export const tasksApi = {
     return normalizeTask(data.data);
   },
 
-  getAllTasks: async (page: number = 1, limit: number = 30): Promise<{
+  getAllTasks: async (
+    page: number = 1,
+    limit: number = 30,
+    filters?: { status?: string; assignedTo?: string },
+  ): Promise<{
     tasks: Task[];
     pagination: {
       page: number;
@@ -85,8 +89,18 @@ export const tasksApi = {
       totalPages: number;
     };
   }> => {
+    const params = new URLSearchParams({
+      page: String(page),
+      limit: String(limit),
+    });
+    if (filters?.status) {
+      params.append('status', filters.status);
+    }
+    if (filters?.assignedTo) {
+      params.append('assignedTo', filters.assignedTo);
+    }
     const { data } = await apiClient.get<PaginatedResponse<Task>>(
-      `/tasks/get-all?page=${page}&limit=${limit}`
+      `/tasks/get-all?${params.toString()}`
     );
     return {
       tasks: (data.data || []).map(normalizeTask),
@@ -114,7 +128,11 @@ export const tasksApi = {
     return normalizeTask(data.data);
   },
 
-  getAssignedTasks: async (page: number = 1, limit: number = 30): Promise<{
+  getAssignedTasks: async (
+    page: number = 1,
+    limit: number = 30,
+    filters?: { status?: string; assignedBy?: string },
+  ): Promise<{
     tasks: Task[];
     pagination: {
       page: number;
@@ -123,8 +141,18 @@ export const tasksApi = {
       totalPages: number;
     };
   }> => {
+    const params = new URLSearchParams({
+      page: String(page),
+      limit: String(limit),
+    });
+    if (filters?.status) {
+      params.append('status', filters.status);
+    }
+    if (filters?.assignedBy) {
+      params.append('assignedBy', filters.assignedBy);
+    }
     const { data } = await apiClient.get<PaginatedResponse<Task>>(
-      `/tasks/assigned-to-me?page=${page}&limit=${limit}`
+      `/tasks/assigned-to-me?${params.toString()}`
     );
     return {
       tasks: (data.data || []).map(normalizeTask),

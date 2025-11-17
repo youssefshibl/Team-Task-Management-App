@@ -7,12 +7,16 @@ import {
   Body,
   Param,
   NotFoundException,
-  BadRequestException,
   Query,
 } from '@nestjs/common';
-import { CreateTaskDto, UpdateTaskDto, UpdateTaskStatusDto, PaginationDto } from './task.dto';
+import {
+  CreateTaskDto,
+  UpdateTaskDto,
+  UpdateTaskStatusDto,
+  TaskFilterDto,
+} from './task.dto';
 import { Auth } from 'src/lib/decorators/auth.decorator';
-import { UserRole } from 'src/lib/enums/user.enum';
+import { UserRole, TaskStatus } from 'src/lib/enums/user.enum';
 import { IJwtPayload } from 'src/lib/interfaces/auth.interface';
 import { TaskService } from './task.service';
 import { User } from 'src/lib/decorators/user.decorator';
@@ -40,17 +44,23 @@ export class TaskController {
 
   @Get('get-all')
   @Auth({ role: UserRole.TEAM_LEAD })
-  async findAll(
-    @User() user: IJwtPayload,
-    @Query() paginationDto: PaginationDto,
-  ) {
-    const page = paginationDto.page || 1;
-    const limit = paginationDto.limit || 10;
+  async findAll(@User() user: IJwtPayload, @Query() filterDto: TaskFilterDto) {
+    const page = filterDto.page || 1;
+    const limit = filterDto.limit || 30;
+
+    const filters: { status?: TaskStatus; assignedTo?: string } = {};
+    if (filterDto.status) {
+      filters.status = filterDto.status;
+    }
+    if (filterDto.assignedTo) {
+      filters.assignedTo = filterDto.assignedTo;
+    }
 
     const result = await this.taskService.findAllWithPagination(
       user.id,
       page,
       limit,
+      filters,
     );
 
     return {
@@ -69,15 +79,24 @@ export class TaskController {
   @Auth({ role: UserRole.MEMBER })
   async getTasksAssignedToMe(
     @User() user: IJwtPayload,
-    @Query() paginationDto: PaginationDto,
+    @Query() filterDto: TaskFilterDto,
   ) {
-    const page = paginationDto.page || 1;
-    const limit = paginationDto.limit || 10;
+    const page = filterDto.page || 1;
+    const limit = filterDto.limit || 30;
+
+    const filters: { status?: TaskStatus; assignedBy?: string } = {};
+    if (filterDto.status) {
+      filters.status = filterDto.status;
+    }
+    if (filterDto.assignedBy) {
+      filters.assignedBy = filterDto.assignedBy;
+    }
 
     const result = await this.taskService.getTasksAssignedToMeWithPagination(
       user.id,
       page,
       limit,
+      filters,
     );
 
     return {

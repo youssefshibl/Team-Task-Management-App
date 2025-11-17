@@ -59,3 +59,17 @@ export class PaginationDto {
   @Max(100)
   limit?: number = 30;
 }
+
+export class TaskFilterDto extends PaginationDto {
+  @IsOptional()
+  @IsEnum(TaskStatus)
+  status?: TaskStatus;
+
+  @IsOptional()
+  @IsMongoId()
+  assignedTo?: string; // For leader: filter by member
+
+  @IsOptional()
+  @IsMongoId()
+  assignedBy?: string; // For member: filter by leader
+}

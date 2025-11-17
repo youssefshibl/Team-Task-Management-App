@@ -18,8 +18,12 @@ export const MemberDashboard: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['assigned-tasks', currentPage],
-    queryFn: () => tasksApi.getAssignedTasks(currentPage, DEFAULT_LIMIT),
+    queryKey: ['assigned-tasks', currentPage, selectedStatus, selectedLeader],
+    queryFn: () =>
+      tasksApi.getAssignedTasks(currentPage, DEFAULT_LIMIT, {
+        status: selectedStatus || undefined,
+        assignedBy: selectedLeader || undefined,
+      }),
   });
 
   const { data: leaders = [] } = useQuery({
@@ -46,13 +50,6 @@ export const MemberDashboard: React.FC = () => {
   const handleStatusChange = (taskId: string, status: 'pending' | 'in_progress' | 'done') => {
     updateStatusMutation.mutate({ id: taskId, status });
   };
-
-  // Filter tasks by status and team leader (client-side filtering on paginated results)
-  const filteredTasks = tasks.filter((task) => {
-    const matchesStatus = !selectedStatus || task.status === selectedStatus;
-    const matchesLeader = !selectedLeader || task.assignedBy.id === selectedLeader;
-    return matchesStatus && matchesLeader;
-  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -108,9 +105,9 @@ export const MemberDashboard: React.FC = () => {
               />
             </Box>
           </div>
-          {(selectedStatus || selectedLeader) && (
+          {(selectedStatus || selectedLeader) && pagination && (
             <div className="filter-info">
-              Showing {filteredTasks.length} of {tasks.length} tasks on this page
+              Showing {tasks.length} of {pagination.total} tasks
             </div>
           )}
           {(selectedStatus || selectedLeader) && (
@@ -132,31 +129,37 @@ export const MemberDashboard: React.FC = () => {
           <div className="tasks-grid">
             {tasks.length === 0 ? (
               <div className="empty-state">
-                <p>No tasks assigned to you yet.</p>
-              </div>
-            ) : filteredTasks.length === 0 ? (
-              <div className="empty-state">
                 <p>
-                  No tasks found
-                  {selectedStatus && ` with status "${selectedStatus.replace('_', ' ')}"`}
-                  {selectedStatus && selectedLeader && ' and'}
-                  {selectedLeader && ` assigned by "${leaders.find((l) => l.id === selectedLeader)?.name || 'selected leader'}"`}
-                  .
+                  {selectedStatus || selectedLeader
+                    ? `No tasks found${
+                        selectedStatus
+                          ? ` with status "${selectedStatus.replace('_', ' ')}"`
+                          : ''
+                      }${
+                        selectedStatus && selectedLeader ? ' and' : ''
+                      }${
+                        selectedLeader
+                          ? ` assigned by "${leaders.find((l) => l.id === selectedLeader)?.name || 'selected leader'}"`
+                          : ''
+                      }.`
+                    : 'No tasks assigned to you yet.'}
                 </p>
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => {
-                    setSelectedStatus('');
-                    setSelectedLeader('');
-                  }}
-                  style={{ marginTop: '1rem' }}
-                >
-                  Clear Filters
-                </button>
+                {(selectedStatus || selectedLeader) && (
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => {
+                      setSelectedStatus('');
+                      setSelectedLeader('');
+                    }}
+                    style={{ marginTop: '1rem' }}
+                  >
+                    Clear Filters
+                  </button>
+                )}
               </div>
             ) : (
               <>
-                {filteredTasks.map((task) => (
+                {tasks.map((task) => (
                 <div key={task.id} className="task-card">
                   <div className="task-header">
                     <h3>{task.name}</h3>

@@ -20,8 +20,12 @@ export const TasksTab: React.FC = () => {
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['tasks', currentPage],
-    queryFn: () => tasksApi.getAllTasks(currentPage, DEFAULT_LIMIT),
+    queryKey: ['tasks', currentPage, selectedStatus, selectedMember],
+    queryFn: () =>
+      tasksApi.getAllTasks(currentPage, DEFAULT_LIMIT, {
+        status: selectedStatus || undefined,
+        assignedTo: selectedMember || undefined,
+      }),
   });
 
   const { data: members = [] } = useQuery({
@@ -36,13 +40,6 @@ export const TasksTab: React.FC = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedStatus, selectedMember]);
-
-  // Filter tasks by status and member (client-side filtering on paginated results)
-  const filteredTasks = tasks.filter((task) => {
-    const matchesStatus = !selectedStatus || task.status === selectedStatus;
-    const matchesMember = !selectedMember || task.assignedTo.id === selectedMember;
-    return matchesStatus && matchesMember;
-  });
 
   const deleteTaskMutation = useMutation({
     mutationFn: tasksApi.deleteTask,
@@ -149,9 +146,9 @@ export const TasksTab: React.FC = () => {
             />
           </Box>
         </div>
-        {(selectedStatus || selectedMember) && (
+        {(selectedStatus || selectedMember) && pagination && (
           <div className="filter-info">
-            Showing {filteredTasks.length} of {tasks.length} tasks on this page
+            Showing {tasks.length} of {pagination.total} tasks
           </div>
         )}
         {(selectedStatus || selectedMember) && (
@@ -173,10 +170,6 @@ export const TasksTab: React.FC = () => {
             <p>Loading tasks...</p>
           </div>
         ) : tasks.length === 0 ? (
-          <div className="empty-state">
-            <p>No tasks created yet. Click "Add Task" to create your first task.</p>
-          </div>
-        ) : filteredTasks.length === 0 ? (
           <div className="empty-state">
             <p>
               No tasks found
@@ -210,7 +203,7 @@ export const TasksTab: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredTasks.map((task) => (
+                {tasks.map((task) => (
                 <tr key={task.id}>
                   <td className="task-title">{task.name}</td>
                   <td className="task-description">{task.description}</td>

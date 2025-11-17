@@ -9,6 +9,7 @@ import { UserValidator } from 'src/lib/utils/user-validator';
 import { CreateTaskDto, UpdateTaskDto } from './task.dto';
 import { TaskStatus } from 'src/lib/enums/user.enum';
 import { Types } from 'mongoose';
+import { Task } from 'src/lib/entity/task.entity';
 
 @Injectable()
 export class TaskService {
@@ -56,13 +57,32 @@ export class TaskService {
     teamLeadId: string,
     page: number = 1,
     limit: number = 10,
-  ) {
-    return this.taskRepo.findWithPagination(
-      { assignedBy: new Types.ObjectId(teamLeadId) },
-      page,
-      limit,
-      { path: 'assignedTo', select: 'name email' },
-    );
+    filters?: { status?: TaskStatus; assignedTo?: string },
+  ): Promise<{
+    data: Task[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    const query: Record<string, any> = {
+      assignedBy: new Types.ObjectId(teamLeadId),
+    };
+
+    // Apply status filter
+    if (filters?.status) {
+      query.status = filters.status;
+    }
+
+    // Apply assignedTo filter (filter by member)
+    if (filters?.assignedTo) {
+      query.assignedTo = new Types.ObjectId(filters.assignedTo);
+    }
+
+    return await this.taskRepo.findWithPagination(query, page, limit, {
+      path: 'assignedTo',
+      select: 'name email',
+    });
   }
 
   async findOne(id: string) {
@@ -155,18 +175,32 @@ export class TaskService {
     memberId: string,
     page: number = 1,
     limit: number = 10,
-  ) {
-    return await this.taskRepo.findWithPagination(
-      {
-        assignedTo: new Types.ObjectId(memberId),
-      },
-      page,
-      limit,
-      {
-        path: 'assignedBy',
-        select: 'name email',
-      },
-    );
+    filters?: { status?: TaskStatus; assignedBy?: string },
+  ): Promise<{
+    data: Task[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    const query: Record<string, any> = {
+      assignedTo: new Types.ObjectId(memberId),
+    };
+
+    // Apply status filter
+    if (filters?.status) {
+      query.status = filters.status;
+    }
+
+    // Apply assignedBy filter (filter by leader)
+    if (filters?.assignedBy) {
+      query.assignedBy = new Types.ObjectId(filters.assignedBy);
+    }
+
+    return await this.taskRepo.findWithPagination(query, page, limit, {
+      path: 'assignedBy',
+      select: 'name email',
+    });
   }
 
   async getStatistics(teamLeadId: string) {
