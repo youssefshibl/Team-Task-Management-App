@@ -14,6 +14,14 @@ async function bootstrap() {
   const logger = app.get<Logger>(WINSTON_MODULE_NEST_PROVIDER);
   app.useLogger(logger);
 
+  // Enable CORS for all origins
+  app.enableCors({
+    origin: true, // Allow all origins
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  });
+
   // Global Exception Filter
   app.useGlobalFilters(new HttpExceptionFilter(logger));
 

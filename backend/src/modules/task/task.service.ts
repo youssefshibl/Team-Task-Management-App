@@ -48,7 +48,7 @@ export class TaskService {
   async findAll(teamLeadId: string) {
     return this.taskRepo.findWithPopulate(
       { assignedBy: new Types.ObjectId(teamLeadId) },
-      { path: 'assignedTo', select: 'name' },
+      { path: 'assignedTo', select: 'name email' },
     );
   }
 
@@ -61,7 +61,7 @@ export class TaskService {
       { _id: id },
       {
         path: 'assignedTo',
-        select: 'name',
+        select: 'name email',
       },
     );
     if (!task) {
@@ -119,7 +119,7 @@ export class TaskService {
       {
         populate: {
           path: 'assignedBy',
-          select: 'name',
+          select: 'name email',
         },
       },
     );
@@ -133,7 +133,7 @@ export class TaskService {
       },
       {
         path: 'assignedBy',
-        select: 'name',
+        select: 'name email',
       },
     );
   }
