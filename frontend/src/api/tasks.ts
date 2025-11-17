@@ -2,6 +2,7 @@ import { apiClient } from './client';
 import {
   Task,
   ApiResponse,
+  PaginatedResponse,
   CreateTaskRequest,
   UpdateTaskRequest,
   UpdateTaskStatusRequest,
@@ -75,9 +76,22 @@ export const tasksApi = {
     return normalizeTask(data.data);
   },
 
-  getAllTasks: async (): Promise<Task[]> => {
-    const { data } = await apiClient.get<ApiResponse<Task[]>>('/tasks/get-all');
-    return (data.data || []).map(normalizeTask);
+  getAllTasks: async (page: number = 1, limit: number = 30): Promise<{
+    tasks: Task[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }> => {
+    const { data } = await apiClient.get<PaginatedResponse<Task>>(
+      `/tasks/get-all?page=${page}&limit=${limit}`
+    );
+    return {
+      tasks: (data.data || []).map(normalizeTask),
+      pagination: data.pagination,
+    };
   },
 
   getTaskById: async (id: string): Promise<Task> => {
@@ -100,9 +114,22 @@ export const tasksApi = {
     return normalizeTask(data.data);
   },
 
-  getAssignedTasks: async (): Promise<Task[]> => {
-    const { data } = await apiClient.get<ApiResponse<Task[]>>('/tasks/assigned-to-me');
-    return (data.data || []).map(normalizeTask);
+  getAssignedTasks: async (page: number = 1, limit: number = 30): Promise<{
+    tasks: Task[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }> => {
+    const { data } = await apiClient.get<PaginatedResponse<Task>>(
+      `/tasks/assigned-to-me?page=${page}&limit=${limit}`
+    );
+    return {
+      tasks: (data.data || []).map(normalizeTask),
+      pagination: data.pagination,
+    };
   },
 
   // Statistics endpoint

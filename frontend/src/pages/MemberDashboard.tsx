@@ -1,27 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Box } from '@chakra-ui/react';
 import { tasksApi } from '../api/tasks';
 import { authApi } from '../api/auth';
 import { useAuth } from '../context/AuthContext';
 import { SearchableMemberSelect } from '../components/SearchableMemberSelect';
+import { Pagination } from '../components/Pagination';
 import '../styles/MemberDashboard.css';
+
+const DEFAULT_LIMIT = 1;
 
 export const MemberDashboard: React.FC = () => {
   const { user, logout } = useAuth();
   const queryClient = useQueryClient();
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [selectedLeader, setSelectedLeader] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const { data: tasks = [], isLoading } = useQuery({
-    queryKey: ['assigned-tasks'],
-    queryFn: tasksApi.getAssignedTasks,
+  const { data, isLoading } = useQuery({
+    queryKey: ['assigned-tasks', currentPage],
+    queryFn: () => tasksApi.getAssignedTasks(currentPage, DEFAULT_LIMIT),
   });
 
   const { data: leaders = [] } = useQuery({
     queryKey: ['leaders'],
     queryFn: authApi.getLeaders,
   });
+
+  const tasks = data?.tasks || [];
+  const pagination = data?.pagination;
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedStatus, selectedLeader]);
 
   const updateStatusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: 'pending' | 'in_progress' | 'done' }) =>
@@ -35,7 +47,7 @@ export const MemberDashboard: React.FC = () => {
     updateStatusMutation.mutate({ id: taskId, status });
   };
 
-  // Filter tasks by status and team leader
+  // Filter tasks by status and team leader (client-side filtering on paginated results)
   const filteredTasks = tasks.filter((task) => {
     const matchesStatus = !selectedStatus || task.status === selectedStatus;
     const matchesLeader = !selectedLeader || task.assignedBy.id === selectedLeader;
@@ -98,7 +110,7 @@ export const MemberDashboard: React.FC = () => {
           </div>
           {(selectedStatus || selectedLeader) && (
             <div className="filter-info">
-              Showing {filteredTasks.length} of {tasks.length} tasks
+              Showing {filteredTasks.length} of {tasks.length} tasks on this page
             </div>
           )}
           {(selectedStatus || selectedLeader) && (
@@ -143,7 +155,8 @@ export const MemberDashboard: React.FC = () => {
                 </button>
               </div>
             ) : (
-              filteredTasks.map((task) => (
+              <>
+                {filteredTasks.map((task) => (
                 <div key={task.id} className="task-card">
                   <div className="task-header">
                     <h3>{task.name}</h3>
@@ -183,7 +196,19 @@ export const MemberDashboard: React.FC = () => {
                     </select>
                   </div>
                 </div>
-              ))
+              ))}
+              {pagination && pagination.totalPages > 1 && (
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={pagination.totalPages}
+                    onPageChange={setCurrentPage}
+                    total={pagination.total}
+                    limit={pagination.limit}
+                  />
+                </div>
+              )}
+              </>
             )}
           </div>
         )}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Box } from '@chakra-ui/react';
 import { tasksApi } from '../api/tasks';
@@ -6,18 +6,22 @@ import { authApi } from '../api/auth';
 import { Task } from '../types';
 import { TaskModal } from './TaskModal';
 import { SearchableMemberSelect } from './SearchableMemberSelect';
+import { Pagination } from './Pagination';
 import '../styles/TasksTab.css';
+
+const DEFAULT_LIMIT = 30;
 
 export const TasksTab: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [selectedMember, setSelectedMember] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
   const queryClient = useQueryClient();
 
-  const { data: tasks = [], isLoading } = useQuery({
-    queryKey: ['tasks'],
-    queryFn: tasksApi.getAllTasks,
+  const { data, isLoading } = useQuery({
+    queryKey: ['tasks', currentPage],
+    queryFn: () => tasksApi.getAllTasks(currentPage, DEFAULT_LIMIT),
   });
 
   const { data: members = [] } = useQuery({
@@ -25,7 +29,15 @@ export const TasksTab: React.FC = () => {
     queryFn: authApi.getMembers,
   });
 
-  // Filter tasks by status and member
+  const tasks = data?.tasks || [];
+  const pagination = data?.pagination;
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedStatus, selectedMember]);
+
+  // Filter tasks by status and member (client-side filtering on paginated results)
   const filteredTasks = tasks.filter((task) => {
     const matchesStatus = !selectedStatus || task.status === selectedStatus;
     const matchesMember = !selectedMember || task.assignedTo.id === selectedMember;
@@ -36,6 +48,10 @@ export const TasksTab: React.FC = () => {
     mutationFn: tasksApi.deleteTask,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      // If current page becomes empty after deletion, go to previous page
+      if (pagination && currentPage > 1 && tasks.length === 1) {
+        setCurrentPage(currentPage - 1);
+      }
     },
   });
 
@@ -135,7 +151,7 @@ export const TasksTab: React.FC = () => {
         </div>
         {(selectedStatus || selectedMember) && (
           <div className="filter-info">
-            Showing {filteredTasks.length} of {tasks.length} tasks
+            Showing {filteredTasks.length} of {tasks.length} tasks on this page
           </div>
         )}
         {(selectedStatus || selectedMember) && (
@@ -152,7 +168,11 @@ export const TasksTab: React.FC = () => {
       </div>
 
       <div className="tasks-table-container">
-        {tasks.length === 0 ? (
+        {isLoading ? (
+          <div className="empty-state">
+            <p>Loading tasks...</p>
+          </div>
+        ) : tasks.length === 0 ? (
           <div className="empty-state">
             <p>No tasks created yet. Click "Add Task" to create your first task.</p>
           </div>
@@ -177,19 +197,20 @@ export const TasksTab: React.FC = () => {
             </button>
           </div>
         ) : (
-          <table className="tasks-table">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Status</th>
-                <th>Assigned To</th>
-                <th>Created</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredTasks.map((task) => (
+          <>
+            <table className="tasks-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Description</th>
+                  <th>Status</th>
+                  <th>Assigned To</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredTasks.map((task) => (
                 <tr key={task.id}>
                   <td className="task-title">{task.name}</td>
                   <td className="task-description">{task.description}</td>
@@ -249,9 +270,19 @@ export const TasksTab: React.FC = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+                ))}
+              </tbody>
+            </table>
+            {pagination && pagination.totalPages > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={pagination.totalPages}
+                onPageChange={setCurrentPage}
+                total={pagination.total}
+                limit={pagination.limit}
+              />
+            )}
+          </>
         )}
       </div>
 

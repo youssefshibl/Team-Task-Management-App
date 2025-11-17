@@ -31,6 +31,17 @@ export interface ApiResponse<T> {
   data: T;
 }
 
+export interface PaginatedResponse<T> {
+  message: string;
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
 export interface CreateTaskRequest {
   name: string;
   description: string;
