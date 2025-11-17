@@ -48,40 +48,54 @@ export class TaskSeeder {
       return;
     }
 
-    // Distribute members across leaders
-    const membersPerLeader = Math.ceil(members.length / leaders.length);
+    // Helper function to get random leader
+    const getRandomLeader = (): SeederUser => {
+      const randomIndex = Math.floor(Math.random() * leaders.length);
+      return leaders[randomIndex] || leaders[0];
+    };
+
+    // Helper function to get random status
+    const getRandomStatus = (): TaskStatus => {
+      const randomIndex = Math.floor(Math.random() * statuses.length);
+      return statuses[randomIndex] || TaskStatus.PENDING;
+    };
 
     for (let memberIndex = 0; memberIndex < members.length; memberIndex++) {
       const member = members[memberIndex];
-      const leaderIndex = Math.floor(memberIndex / membersPerLeader);
-      const assignedBy = leaders[leaderIndex] || leaders[0]; // Fallback to first leader
 
-      // Validate member and leader have valid IDs
+      // Validate member has valid ID
       const memberId =
         member.id ||
         (member._id instanceof Types.ObjectId
           ? member._id.toString()
           : String(member._id || '')) ||
         null;
-      const leaderId =
-        assignedBy.id ||
-        (assignedBy._id instanceof Types.ObjectId
-          ? assignedBy._id.toString()
-          : String(assignedBy._id || '')) ||
-        null;
 
-      if (!memberId || !leaderId) {
-        console.warn(
-          `Skipping member ${memberIndex + 1}: Invalid member or leader ID`,
-        );
+      if (!memberId) {
+        console.warn(`Skipping member ${memberIndex + 1}: Invalid member ID`);
         continue;
       }
 
       // Create tasks for this member
       for (let taskNum = 1; taskNum <= tasksPerMember; taskNum++) {
-        // Distribute statuses evenly
-        const statusIndex = (taskNum - 1) % statuses.length;
-        const status = statuses[statusIndex];
+        // Randomly assign a leader for each task
+        const assignedBy = getRandomLeader();
+        const leaderId =
+          assignedBy.id ||
+          (assignedBy._id instanceof Types.ObjectId
+            ? assignedBy._id.toString()
+            : String(assignedBy._id || '')) ||
+          null;
+
+        if (!leaderId) {
+          console.warn(
+            `Skipping task ${taskNum} for member ${memberIndex + 1}: Invalid leader ID`,
+          );
+          continue;
+        }
+
+        // Randomly assign status
+        const status = getRandomStatus();
 
         const memberName = member.name || `Member ${memberIndex + 1}`;
         const taskName = `Task ${taskNum} - ${memberName} - ${memberIndex + 1}`;
@@ -97,6 +111,27 @@ export class TaskSeeder {
           continue;
         }
 
+        // Randomize creation date (within last 30 days)
+        const now = new Date();
+        const daysAgo = Math.floor(Math.random() * 30); // Random days between 0-29
+        const hoursAgo = Math.floor(Math.random() * 24); // Random hours
+        const minutesAgo = Math.floor(Math.random() * 60); // Random minutes
+        const createdAt = new Date(
+          now.getTime() -
+            daysAgo * 24 * 60 * 60 * 1000 -
+            hoursAgo * 60 * 60 * 1000 -
+            minutesAgo * 60 * 1000,
+        );
+
+        // Updated date is same as created or slightly later (for completed tasks)
+        const updatedAt =
+          status === TaskStatus.COMPLETED
+            ? new Date(
+                createdAt.getTime() +
+                  Math.floor(Math.random() * 7) * 24 * 60 * 60 * 1000,
+              ) // 0-7 days after creation
+            : createdAt;
+
         // Create task
         await this.taskRepo.create({
           name: taskName,
@@ -104,8 +139,8 @@ export class TaskSeeder {
           status,
           assignedTo: new Types.ObjectId(String(memberId)),
           assignedBy: new Types.ObjectId(String(leaderId)),
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          createdAt,
+          updatedAt,
         });
 
         totalTasksCreated++;
