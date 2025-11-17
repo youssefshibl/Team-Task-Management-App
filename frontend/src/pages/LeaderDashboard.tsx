@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { UsersTab } from '../components/UsersTab';
 import { TasksTab } from '../components/TasksTab';
+import { OverviewTab } from '../components/OverviewTab';
 import '../styles/LeaderDashboard.css';
 
-type Tab = 'users' | 'tasks';
+type Tab = 'overview' | 'users' | 'tasks';
 
 export const LeaderDashboard: React.FC = () => {
   const { user, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<Tab>('tasks');
+  const [activeTab, setActiveTab] = useState<Tab>('overview');
 
   return (
     <div className="leader-dashboard">
@@ -20,6 +21,29 @@ export const LeaderDashboard: React.FC = () => {
         </div>
 
         <nav className="sidebar-nav">
+          <button
+            className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`}
+            onClick={() => setActiveTab('overview')}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            Overview
+          </button>
+
           <button
             className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
             onClick={() => setActiveTab('users')}
@@ -73,6 +97,7 @@ export const LeaderDashboard: React.FC = () => {
       </aside>
 
       <main className="main-content">
+        {activeTab === 'overview' && <OverviewTab />}
         {activeTab === 'users' && <UsersTab />}
         {activeTab === 'tasks' && <TasksTab />}
       </main>

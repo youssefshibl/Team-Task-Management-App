@@ -412,6 +412,42 @@ Authorization: Bearer <token>
 
 ---
 
+### 8. Get Task Statistics
+```http
+GET /tasks/statistics
+Authorization: Bearer <token>
+```
+
+**Description:** Get statistics about tasks created by the authenticated team lead (counts by status)
+
+**Authentication:** Required (Team Lead role)
+
+**Response:**
+```json
+{
+  "message": "Statistics fetched successfully",
+  "data": {
+    "pending": 5,
+    "in_progress": 3,
+    "done": 12,
+    "total": 20
+  }
+}
+```
+
+**Response Fields:**
+- `pending` (number) - Count of tasks with pending status
+- `in_progress` (number) - Count of tasks with in_progress status
+- `done` (number) - Count of tasks with done status
+- `total` (number) - Total number of tasks created by the team lead
+
+**Status Codes:**
+- `200` - Success
+- `401` - Unauthorized
+- `403` - Forbidden (not a Team Lead)
+
+---
+
 ## 🏠 App Endpoints
 
 ### 1. Health Check
@@ -447,6 +483,7 @@ Hello World!
 | `DELETE` | `/tasks/:id` | ✅ | Team Lead | Delete task |
 | `PUT` | `/tasks/:id/status` | ✅ | Member | Update task status |
 | `GET` | `/tasks/assigned-to-me` | ✅ | Member | Get assigned tasks |
+| `GET` | `/tasks/statistics` | ✅ | Team Lead | Get task statistics |
 | `GET` | `/` | ❌ | - | Health check |
 
 ---
@@ -530,11 +567,12 @@ Authorization: Bearer <your-jwt-token>
 1. `POST /auth/login` - Login
 2. `GET /auth/members` - View available members
 3. `GET /auth/leaders` - View all team leads
-4. `POST /tasks/create` - Create task
-5. `GET /tasks/get-all` - View all created tasks
-6. `GET /tasks/:id` - View specific task
-7. `PUT /tasks/:id` - Update task
-8. `DELETE /tasks/:id` - Delete task
+4. `GET /tasks/statistics` - View task statistics
+5. `POST /tasks/create` - Create task
+6. `GET /tasks/get-all` - View all created tasks
+7. `GET /tasks/:id` - View specific task
+8. `PUT /tasks/:id` - Update task
+9. `DELETE /tasks/:id` - Delete task
 
 ### Member Workflow
 1. `POST /auth/login` - Login

@@ -56,6 +56,16 @@ export class TaskController {
     };
   }
 
+  @Get('statistics')
+  @Auth({ role: UserRole.TEAM_LEAD })
+  async getStatistics(@User() user: IJwtPayload) {
+    const statistics = await this.taskService.getStatistics(user.id);
+    return {
+      message: 'Statistics fetched successfully',
+      data: statistics,
+    };
+  }
+
   @Get(':id')
   @Auth({ role: UserRole.TEAM_LEAD })
   async findOne(@Param('id') id: string) {

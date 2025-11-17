@@ -137,4 +137,33 @@ export class TaskService {
       },
     );
   }
+
+  async getStatistics(teamLeadId: string) {
+    const tasks = await this.taskRepo.find({
+      assignedBy: new Types.ObjectId(teamLeadId),
+    });
+
+    const statistics = {
+      pending: 0,
+      in_progress: 0,
+      done: 0,
+      total: tasks.length,
+    };
+
+    tasks.forEach((task) => {
+      switch (task.status) {
+        case TaskStatus.PENDING:
+          statistics.pending++;
+          break;
+        case TaskStatus.IN_PROGRESS:
+          statistics.in_progress++;
+          break;
+        case TaskStatus.COMPLETED:
+          statistics.done++;
+          break;
+      }
+    });
+
+    return statistics;
+  }
 }

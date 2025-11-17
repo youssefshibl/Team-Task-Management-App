@@ -104,5 +104,21 @@ export const tasksApi = {
     const { data } = await apiClient.get<ApiResponse<Task[]>>('/tasks/assigned-to-me');
     return (data.data || []).map(normalizeTask);
   },
+
+  // Statistics endpoint
+  getStatistics: async (): Promise<{
+    pending: number;
+    in_progress: number;
+    done: number;
+    total: number;
+  }> => {
+    const { data } = await apiClient.get<ApiResponse<{
+      pending: number;
+      in_progress: number;
+      done: number;
+      total: number;
+    }>>('/tasks/statistics');
+    return data.data;
+  },
 };
 
