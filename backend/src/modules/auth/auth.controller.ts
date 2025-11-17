@@ -52,7 +52,7 @@ export class AuthController {
   }
 
   @Get('members')
-  @Auth({ role: UserRole.TEAM_LEAD })
+  @Auth({ role: UserRole.TEAM_LEAD }, { role: UserRole.MEMBER })
   async getMembers() {
     const members = await this.userRepo.find({ role: UserRole.MEMBER });
 
@@ -62,6 +62,21 @@ export class AuthController {
         id: member.id,
         name: member.name,
         email: member.email,
+      })),
+    };
+  }
+
+  @Get('leaders')
+  @Auth({ role: UserRole.TEAM_LEAD }, { role: UserRole.MEMBER })
+  async getLeaders() {
+    const leaders = await this.userRepo.find({ role: UserRole.TEAM_LEAD });
+
+    return {
+      message: 'Leaders fetched successfully',
+      data: leaders.map((leader) => ({
+        id: leader.id,
+        name: leader.name,
+        email: leader.email,
       })),
     };
   }

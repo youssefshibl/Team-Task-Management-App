@@ -89,6 +89,42 @@ Authorization: Bearer <token>
 
 ---
 
+### 3. Get Leaders List
+```http
+GET /auth/leaders
+Authorization: Bearer <token>
+```
+
+**Description:** Get list of all team lead users (Team Lead and Member roles can access)
+
+**Authentication:** Required (Team Lead or Member role)
+
+**Response:**
+```json
+{
+  "message": "Leaders fetched successfully",
+  "data": [
+    {
+      "id": "507f1f77bcf86cd799439011",
+      "name": "Team Lead 1",
+      "email": "teamlead1@example.com"
+    },
+    {
+      "id": "507f1f77bcf86cd799439012",
+      "name": "Team Lead 2",
+      "email": "teamlead2@example.com"
+    }
+  ]
+}
+```
+
+**Status Codes:**
+- `200` - Success
+- `401` - Unauthorized (missing/invalid token)
+- `403` - Forbidden (not authenticated)
+
+---
+
 ## 📝 Task Management Endpoints
 
 ### 1. Create Task
@@ -403,6 +439,7 @@ Hello World!
 |--------|----------|---------------|------|-------------|
 | `POST` | `/auth/login` | ❌ | - | User login |
 | `GET` | `/auth/members` | ✅ | Team Lead | Get members list |
+| `GET` | `/auth/leaders` | ✅ | Team Lead, Member | Get leaders list |
 | `POST` | `/tasks/create` | ✅ | Team Lead | Create task |
 | `GET` | `/tasks/get-all` | ✅ | Team Lead | Get all tasks |
 | `GET` | `/tasks/:id` | ✅ | Team Lead | Get task by ID |
@@ -492,16 +529,18 @@ Authorization: Bearer <your-jwt-token>
 ### Team Lead Workflow
 1. `POST /auth/login` - Login
 2. `GET /auth/members` - View available members
-3. `POST /tasks/create` - Create task
-4. `GET /tasks/get-all` - View all created tasks
-5. `GET /tasks/:id` - View specific task
-6. `PUT /tasks/:id` - Update task
-7. `DELETE /tasks/:id` - Delete task
+3. `GET /auth/leaders` - View all team leads
+4. `POST /tasks/create` - Create task
+5. `GET /tasks/get-all` - View all created tasks
+6. `GET /tasks/:id` - View specific task
+7. `PUT /tasks/:id` - Update task
+8. `DELETE /tasks/:id` - Delete task
 
 ### Member Workflow
 1. `POST /auth/login` - Login
-2. `GET /tasks/assigned-to-me` - View assigned tasks
-3. `PUT /tasks/:id/status` - Update task status
+2. `GET /auth/leaders` - View all team leads
+3. `GET /tasks/assigned-to-me` - View assigned tasks
+4. `PUT /tasks/:id/status` - Update task status
 
 ---
 
