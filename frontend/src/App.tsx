@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ChakraProvider } from '@chakra-ui/react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Login } from './pages/Login';
@@ -36,33 +37,35 @@ const Home = () => {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/" element={<Home />} />
-            <Route
-              path="/member"
-              element={
-                <ProtectedRoute requiredRole="member">
-                  <MemberDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/leader/*"
-              element={
-                <ProtectedRoute requiredRole="team_lead">
-                  <LeaderDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Router>
-      </AuthProvider>
-    </QueryClientProvider>
+    <ChakraProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <Router>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/" element={<Home />} />
+              <Route
+                path="/member"
+                element={
+                  <ProtectedRoute requiredRole="member">
+                    <MemberDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/leader/*"
+                element={
+                  <ProtectedRoute requiredRole="team_lead">
+                    <LeaderDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Router>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ChakraProvider>
   );
 }
 

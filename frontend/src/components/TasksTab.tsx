@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Box } from '@chakra-ui/react';
 import { tasksApi } from '../api/tasks';
 import { authApi } from '../api/auth';
 import { Task } from '../types';
 import { TaskModal } from './TaskModal';
+import { SearchableMemberSelect } from './SearchableMemberSelect';
 import '../styles/TasksTab.css';
 
 export const TasksTab: React.FC = () => {
@@ -122,19 +124,14 @@ export const TasksTab: React.FC = () => {
         </div>
         <div className="filter-group">
           <label htmlFor="member-filter">Filter by Member:</label>
-          <select
-            id="member-filter"
-            value={selectedMember}
-            onChange={(e) => setSelectedMember(e.target.value)}
-            className="filter-select"
-          >
-            <option value="">All Members</option>
-            {members.map((member) => (
-              <option key={member.id} value={member.id}>
-                {member.name}
-              </option>
-            ))}
-          </select>
+          <Box>
+            <SearchableMemberSelect
+              members={members}
+              selectedMemberId={selectedMember}
+              onSelect={setSelectedMember}
+              placeholder="All Members"
+            />
+          </Box>
         </div>
         {(selectedStatus || selectedMember) && (
           <div className="filter-info">
