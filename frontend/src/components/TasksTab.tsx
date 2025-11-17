@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { tasksApi } from '../api/tasks';
+import { authApi } from '../api/auth';
 import { Task } from '../types';
 import { TaskModal } from './TaskModal';
 import '../styles/TasksTab.css';
@@ -8,11 +9,25 @@ import '../styles/TasksTab.css';
 export const TasksTab: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [selectedMember, setSelectedMember] = useState<string>('');
   const queryClient = useQueryClient();
 
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ['tasks'],
     queryFn: tasksApi.getAllTasks,
+  });
+
+  const { data: members = [] } = useQuery({
+    queryKey: ['members'],
+    queryFn: authApi.getMembers,
+  });
+
+  // Filter tasks by status and member
+  const filteredTasks = tasks.filter((task) => {
+    const matchesStatus = !selectedStatus || task.status === selectedStatus;
+    const matchesMember = !selectedMember || task.assignedTo.id === selectedMember;
+    return matchesStatus && matchesMember;
   });
 
   const deleteTaskMutation = useMutation({
@@ -90,10 +105,79 @@ export const TasksTab: React.FC = () => {
         </button>
       </div>
 
+      <div className="filters">
+        <div className="filter-group">
+          <label htmlFor="status-filter">Filter by Status:</label>
+          <select
+            id="status-filter"
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            className="filter-select"
+          >
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="in_progress">In Progress</option>
+            <option value="done">Done</option>
+          </select>
+        </div>
+        <div className="filter-group">
+          <label htmlFor="member-filter">Filter by Member:</label>
+          <select
+            id="member-filter"
+            value={selectedMember}
+            onChange={(e) => setSelectedMember(e.target.value)}
+            className="filter-select"
+          >
+            <option value="">All Members</option>
+            {members.map((member) => (
+              <option key={member.id} value={member.id}>
+                {member.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        {(selectedStatus || selectedMember) && (
+          <div className="filter-info">
+            Showing {filteredTasks.length} of {tasks.length} tasks
+          </div>
+        )}
+        {(selectedStatus || selectedMember) && (
+          <button
+            className="btn btn-secondary btn-clear-filters"
+            onClick={() => {
+              setSelectedStatus('');
+              setSelectedMember('');
+            }}
+          >
+            Clear Filters
+          </button>
+        )}
+      </div>
+
       <div className="tasks-table-container">
         {tasks.length === 0 ? (
           <div className="empty-state">
             <p>No tasks created yet. Click "Add Task" to create your first task.</p>
+          </div>
+        ) : filteredTasks.length === 0 ? (
+          <div className="empty-state">
+            <p>
+              No tasks found
+              {selectedStatus && ` with status "${selectedStatus.replace('_', ' ')}"`}
+              {selectedStatus && selectedMember && ' and'}
+              {selectedMember && ` assigned to "${members.find((m) => m.id === selectedMember)?.name || 'selected member'}"`}
+              .
+            </p>
+            <button
+              className="btn btn-secondary"
+              onClick={() => {
+                setSelectedStatus('');
+                setSelectedMember('');
+              }}
+              style={{ marginTop: '1rem' }}
+            >
+              Clear Filters
+            </button>
           </div>
         ) : (
           <table className="tasks-table">
@@ -108,7 +192,7 @@ export const TasksTab: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {tasks.map((task) => (
+              {filteredTasks.map((task) => (
                 <tr key={task.id}>
                   <td className="task-title">{task.name}</td>
                   <td className="task-description">{task.description}</td>
