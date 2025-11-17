@@ -7,8 +7,10 @@ import {
   Body,
   Param,
   NotFoundException,
+  BadRequestException,
+  Query,
 } from '@nestjs/common';
-import { CreateTaskDto, UpdateTaskDto, UpdateTaskStatusDto } from './task.dto';
+import { CreateTaskDto, UpdateTaskDto, UpdateTaskStatusDto, PaginationDto } from './task.dto';
 import { Auth } from 'src/lib/decorators/auth.decorator';
 import { UserRole } from 'src/lib/enums/user.enum';
 import { IJwtPayload } from 'src/lib/interfaces/auth.interface';
@@ -38,21 +40,55 @@ export class TaskController {
 
   @Get('get-all')
   @Auth({ role: UserRole.TEAM_LEAD })
-  async findAll(@User() user: IJwtPayload) {
-    const tasks = await this.taskService.findAll(user.id);
+  async findAll(
+    @User() user: IJwtPayload,
+    @Query() paginationDto: PaginationDto,
+  ) {
+    const page = paginationDto.page || 1;
+    const limit = paginationDto.limit || 10;
+
+    const result = await this.taskService.findAllWithPagination(
+      user.id,
+      page,
+      limit,
+    );
+
     return {
       message: 'Tasks fetched successfully',
-      data: TaskResponseMapper.toResponseArray(tasks),
+      data: TaskResponseMapper.toResponseArray(result.data),
+      pagination: {
+        page: result.page,
+        limit: result.limit,
+        total: result.total,
+        totalPages: result.totalPages,
+      },
     };
   }
 
   @Get('assigned-to-me')
   @Auth({ role: UserRole.MEMBER })
-  async getTasksAssignedToMe(@User() user: IJwtPayload) {
-    const tasks = await this.taskService.getTasksAssignedToMe(user.id);
+  async getTasksAssignedToMe(
+    @User() user: IJwtPayload,
+    @Query() paginationDto: PaginationDto,
+  ) {
+    const page = paginationDto.page || 1;
+    const limit = paginationDto.limit || 10;
+
+    const result = await this.taskService.getTasksAssignedToMeWithPagination(
+      user.id,
+      page,
+      limit,
+    );
+
     return {
       message: 'Tasks fetched successfully',
-      data: TaskResponseMapper.toResponseArray(tasks),
+      data: TaskResponseMapper.toResponseArray(result.data),
+      pagination: {
+        page: result.page,
+        limit: result.limit,
+        total: result.total,
+        totalPages: result.totalPages,
+      },
     };
   }
 

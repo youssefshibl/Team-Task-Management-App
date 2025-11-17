@@ -4,7 +4,11 @@ import {
   IsEnum,
   IsOptional,
   IsMongoId,
+  IsInt,
+  Min,
+  Max,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { TaskStatus } from 'src/lib/enums/user.enum';
 
 export class CreateTaskDto {
@@ -39,4 +43,19 @@ export class UpdateTaskStatusDto {
   @IsEnum(TaskStatus)
   @IsNotEmpty()
   status: TaskStatus;
+}
+
+export class PaginationDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  limit?: number = 10;
 }

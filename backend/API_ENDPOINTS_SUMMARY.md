@@ -175,13 +175,17 @@ Content-Type: application/json
 
 ### 2. Get All Tasks
 ```http
-GET /tasks/get-all
+GET /tasks/get-all?page=1&limit=10
 Authorization: Bearer <token>
 ```
 
-**Description:** Get all tasks created by the authenticated Team Lead
+**Description:** Get all tasks created by the authenticated Team Lead with pagination
 
 **Authentication:** Required (Team Lead role)
+
+**Query Parameters:**
+- `page` (optional, number, default: 1) - Page number (must be >= 1)
+- `limit` (optional, number, default: 10) - Number of items per page (must be between 1 and 100)
 
 **Response:**
 ```json
@@ -198,14 +202,41 @@ Authorization: Bearer <token>
       "createdAt": "2024-01-15T10:30:00.000Z",
       "updatedAt": "2024-01-15T10:30:00.000Z"
     }
-  ]
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 25,
+    "totalPages": 3
+  }
 }
 ```
 
+**Response Fields:**
+- `data` (array) - Array of task objects
+- `pagination` (object) - Pagination metadata
+  - `page` (number) - Current page number
+  - `limit` (number) - Number of items per page
+  - `total` (number) - Total number of tasks
+  - `totalPages` (number) - Total number of pages
+
 **Status Codes:**
 - `200` - Success
+- `400` - Bad Request (invalid pagination parameters)
 - `401` - Unauthorized
 - `403` - Forbidden (not a Team Lead)
+
+**Example Requests:**
+```http
+# Get first page with default limit (10)
+GET /tasks/get-all
+
+# Get second page with 20 items per page
+GET /tasks/get-all?page=2&limit=20
+
+# Get first page with 5 items per page
+GET /tasks/get-all?page=1&limit=5
+```
 
 ---
 
@@ -378,13 +409,17 @@ Content-Type: application/json
 
 ### 7. Get Tasks Assigned to Me
 ```http
-GET /tasks/assigned-to-me
+GET /tasks/assigned-to-me?page=1&limit=10
 Authorization: Bearer <token>
 ```
 
-**Description:** Get all tasks assigned to the authenticated member
+**Description:** Get all tasks assigned to the authenticated member with pagination
 
 **Authentication:** Required (Member role)
+
+**Query Parameters:**
+- `page` (optional, number, default: 1) - Page number (must be >= 1)
+- `limit` (optional, number, default: 10) - Number of items per page (must be between 1 and 100)
 
 **Response:**
 ```json
@@ -401,14 +436,41 @@ Authorization: Bearer <token>
       "createdAt": "2024-01-15T10:30:00.000Z",
       "updatedAt": "2024-01-15T10:30:00.000Z"
     }
-  ]
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 15,
+    "totalPages": 2
+  }
 }
 ```
 
+**Response Fields:**
+- `data` (array) - Array of task objects
+- `pagination` (object) - Pagination metadata
+  - `page` (number) - Current page number
+  - `limit` (number) - Number of items per page
+  - `total` (number) - Total number of tasks assigned to the member
+  - `totalPages` (number) - Total number of pages
+
 **Status Codes:**
 - `200` - Success
+- `400` - Bad Request (invalid pagination parameters)
 - `401` - Unauthorized
 - `403` - Forbidden (not a Member)
+
+**Example Requests:**
+```http
+# Get first page with default limit (10)
+GET /tasks/assigned-to-me
+
+# Get second page with 20 items per page
+GET /tasks/assigned-to-me?page=2&limit=20
+
+# Get first page with 5 items per page
+GET /tasks/assigned-to-me?page=1&limit=5
+```
 
 ---
 

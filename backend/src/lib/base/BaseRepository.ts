@@ -119,6 +119,46 @@ export abstract class BaseRepository<T> {
     return queryBuilder.exec();
   }
 
+  public async findWithPagination(
+    query: Record<string, any>,
+    page: number = 1,
+    limit: number = 10,
+    populate?: PopulateOptions | PopulateOptions[],
+  ): Promise<{
+    data: T[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    const skip = (page - 1) * limit;
+    const contextQuery = this.injectContextQuery(query);
+
+    // Get total count
+    const total = await this.model.countDocuments(contextQuery).exec();
+
+    // Build query with pagination
+    let queryBuilder = this.model
+      .find(contextQuery)
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 }); // Sort by newest first
+
+    if (populate) {
+      queryBuilder = queryBuilder.populate(populate);
+    }
+
+    const data = await queryBuilder.exec();
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
   public deleteById(id: string | Types.ObjectId): Promise<T | null> {
     return this.model.findByIdAndDelete(id).exec();
   }

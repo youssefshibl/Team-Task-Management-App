@@ -52,6 +52,19 @@ export class TaskService {
     );
   }
 
+  async findAllWithPagination(
+    teamLeadId: string,
+    page: number = 1,
+    limit: number = 10,
+  ) {
+    return this.taskRepo.findWithPagination(
+      { assignedBy: new Types.ObjectId(teamLeadId) },
+      page,
+      limit,
+      { path: 'assignedTo', select: 'name email' },
+    );
+  }
+
   async findOne(id: string) {
     return this.taskRepo.findById(id);
   }
@@ -131,6 +144,24 @@ export class TaskService {
       {
         assignedTo: new Types.ObjectId(memberId),
       },
+      {
+        path: 'assignedBy',
+        select: 'name email',
+      },
+    );
+  }
+
+  async getTasksAssignedToMeWithPagination(
+    memberId: string,
+    page: number = 1,
+    limit: number = 10,
+  ) {
+    return await this.taskRepo.findWithPagination(
+      {
+        assignedTo: new Types.ObjectId(memberId),
+      },
+      page,
+      limit,
       {
         path: 'assignedBy',
         select: 'name email',
