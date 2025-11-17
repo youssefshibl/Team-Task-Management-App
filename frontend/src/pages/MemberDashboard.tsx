@@ -8,7 +8,7 @@ import { SearchableMemberSelect } from '../components/SearchableMemberSelect';
 import { Pagination } from '../components/Pagination';
 import '../styles/MemberDashboard.css';
 
-const DEFAULT_LIMIT = 1;
+const DEFAULT_LIMIT = 30;
 
 export const MemberDashboard: React.FC = () => {
   const { user, logout } = useAuth();

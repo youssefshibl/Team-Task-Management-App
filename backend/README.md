@@ -402,7 +402,7 @@ this.logger.warn('Warning message');
 
 ## 🌱 Seeding
 
-The application includes a seeder to populate the database with initial user data.
+The application includes seeders to populate the database with initial user and task data.
 
 ### Run Seeder
 
@@ -410,26 +410,51 @@ The application includes a seeder to populate the database with initial user dat
 npm run seed
 ```
 
-### Seeded Users
+### Seeder Configuration
 
-The seeder creates the following users:
+You can configure the seeder using environment variables in your `.env` file:
 
-1. **Team Lead**
-   - Email: `teamlead@example.com`
-   - Password: `password123`
-   - Role: `team_lead`
+```env
+# Number of team leaders to create (default: 5)
+SEED_LEADERS_COUNT=5
 
-2. **Member 1**
-   - Email: `member1@example.com`
-   - Password: `password123`
-   - Role: `member`
+# Number of members to create (default: 50)
+SEED_MEMBERS_COUNT=50
 
-3. **Member 2**
-   - Email: `member2@example.com`
-   - Password: `password123`
-   - Role: `member`
+# Number of tasks per member (default: 10)
+SEED_TASKS_PER_MEMBER=10
+```
 
-**Note:** The seeder checks for existing users and skips them to avoid duplicates.
+### Default Seeded Data
+
+By default, the seeder creates:
+
+- **5 Team Leaders**: `teamlead1@example.com` through `teamlead5@example.com`
+- **50 Members**: `member1@example.com` through `member50@example.com`
+- **500 Tasks**: 10 tasks per member (50 members × 10 tasks)
+
+### Task Distribution
+
+- Each member receives tasks assigned by different leaders (distributed evenly)
+- Tasks have different statuses: `pending`, `in_progress`, and `done` (distributed evenly)
+- All users have password: `password123`
+
+### Example Login Credentials
+
+**Team Leads:**
+- `teamlead1@example.com` / `password123`
+- `teamlead2@example.com` / `password123`
+- ... (up to teamlead5)
+
+**Members:**
+- `member1@example.com` / `password123`
+- `member2@example.com` / `password123`
+- ... (up to member50)
+
+**Note:** 
+- The seeder checks for existing users and tasks and skips them to avoid duplicates
+- The seeder is idempotent - you can run it multiple times safely
+- See [ENV_VARIABLES.md](./ENV_VARIABLES.md) for detailed environment variable documentation
 
 ## 🧪 Testing
 
