@@ -14,6 +14,7 @@ A full-stack task management application with role-based access control, built w
 - [API Documentation](#api-documentation)
 - [Authentication](#authentication)
 - [Database Seeding](#database-seeding)
+- [Test Coverage](#test-coverage)
 - [Environment Variables](#environment-variables)
 - [Troubleshooting](#troubleshooting)
 - [Documentation](#documentation)
@@ -453,6 +454,106 @@ SEED_TASKS_PER_MEMBER=10   # Tasks per member
 The seeder is idempotent - safe to run multiple times.
 
 For detailed seeding instructions, see [SEEDING_IN_DOCKER.md](./SEEDING_IN_DOCKER.md).
+
+## 🧪 Test Coverage
+
+The backend includes comprehensive test coverage with unit tests and integration tests. The project maintains high code coverage standards to ensure code quality and reliability.
+
+### Coverage Overview
+
+The backend test suite includes:
+- Unit tests for services, controllers, and repositories
+- Integration tests for API endpoints
+- Coverage thresholds: 70% for branches, functions, lines, and statements
+
+### Running Tests
+
+```bash
+cd backend
+
+# Run all tests
+npm run test
+
+# Run tests with coverage
+npm run test:cov
+
+# Generate HTML coverage report
+npm run test:cov:html
+
+# View coverage summary
+npm run test:cov:report
+```
+
+### Coverage Reports
+
+#### 1. Overall Coverage Summary
+
+![Overall Coverage Summary](./docs/1.png)
+
+This screenshot shows the overall test coverage summary, displaying coverage percentages for:
+- **Statements**: Percentage of code statements executed during tests
+- **Branches**: Percentage of conditional branches tested
+- **Functions**: Percentage of functions called in tests
+- **Lines**: Percentage of code lines executed
+
+#### 2. Detailed File Coverage
+
+![Detailed File Coverage](./docs/2.png)
+
+This screenshot shows the detailed coverage breakdown by file, including:
+- Individual file coverage percentages
+- Total coverage metrics
+- File-by-file analysis to identify areas needing more tests
+
+#### 3. Line-by-Line Coverage
+
+![Line-by-Line Coverage](./docs/3.png)
+
+This screenshot shows the line-by-line coverage view, which helps developers:
+- Identify untested code paths
+- See which lines are covered (green) and which are not (red)
+- Understand test execution flow
+- Improve test coverage by targeting specific uncovered lines
+
+### Coverage Thresholds
+
+The project enforces minimum coverage thresholds:
+- **Branches**: 70%
+- **Functions**: 70%
+- **Lines**: 70%
+- **Statements**: 70%
+
+If coverage falls below these thresholds, the test run will fail, ensuring code quality standards are maintained.
+
+### Viewing HTML Reports
+
+To view the interactive HTML coverage report:
+
+```bash
+cd backend
+npm run test:cov:html
+# Then open coverage/lcov-report/index.html in your browser
+```
+
+The HTML report provides:
+- Interactive file navigation
+- Line-by-line coverage highlighting
+- Coverage statistics and trends
+- Export options for CI/CD integration
+
+### Files Excluded from Coverage
+
+The following files are excluded from coverage calculations:
+- Test files (`*.spec.ts`)
+- TypeScript interfaces (`*.interface.ts`)
+- DTOs (`*.dto.ts`)
+- Database entities (`*.entity.ts`)
+- Enumerations (`*.enum.ts`)
+- Application entry point (`main.ts`)
+- Database seeders (`seed.ts`, `*.seeder.ts`)
+- NestJS modules (`*.module.ts`)
+
+For detailed testing documentation, see [backend/TESTING.md](./backend/TESTING.md) and [backend/coverage-report.md](./backend/coverage-report.md).
 
 ## 🔧 Environment Variables
 
