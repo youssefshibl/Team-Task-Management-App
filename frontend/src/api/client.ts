@@ -1,6 +1,21 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:3000';
+// Use environment variable or determine based on environment
+// In Docker/production: use relative path (nginx proxies /api to backend)
+// In development: use full URL or environment variable
+const getApiBaseUrl = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  // If running in production/Docker, use relative path for nginx proxy
+  if (import.meta.env.PROD) {
+    return '/api';
+  }
+  // Development fallback
+  return 'http://localhost:3000';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
