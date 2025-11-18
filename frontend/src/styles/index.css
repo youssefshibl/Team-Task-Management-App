@@ -104,6 +104,8 @@ code {
 /* Input Styles */
 .input-group {
   margin-bottom: 1.25rem;
+  position: relative;
+  z-index: 1;
 }
 
 .input-group label {
@@ -190,7 +192,9 @@ code {
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
+  overflow-x: visible;
   box-shadow: var(--shadow-lg);
+  position: relative;
 }
 
 .modal-header {

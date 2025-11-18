@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { tasksApi } from '../api/tasks';
 import { authApi } from '../api/auth';
 import { Task, CreateTaskRequest, UpdateTaskRequest } from '../types';
+import { SearchableSelect } from './SearchableSelect';
 
 interface TaskModalProps {
   task: Task | null;
@@ -22,6 +23,19 @@ export const TaskModal: React.FC<TaskModalProps> = ({ task, onClose }) => {
     queryKey: ['members'],
     queryFn: authApi.getMembers,
   });
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    // Save the current overflow style
+    const originalOverflow = document.body.style.overflow;
+    // Disable scrolling
+    document.body.style.overflow = 'hidden';
+    
+    // Restore scrolling when modal closes
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
 
   useEffect(() => {
     if (task) {
@@ -126,19 +140,14 @@ export const TaskModal: React.FC<TaskModalProps> = ({ task, onClose }) => {
 
           <div className="input-group">
             <label htmlFor="task-assigned">Assign To *</label>
-            <select
+            <SearchableSelect
               id="task-assigned"
+              options={members}
               value={formData.assignedTo}
-              onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value })}
+              onChange={(value) => setFormData({ ...formData, assignedTo: value })}
+              placeholder="Select a team member"
               required
-            >
-              <option value="">Select a team member</option>
-              {members.map((member) => (
-                <option key={member.id} value={member.id}>
-                  {member.name} ({member.email})
-                </option>
-              ))}
-            </select>
+            />
             {task && !formData.assignedTo && members.length > 0 && (
               <small style={{ color: '#ef4444', marginTop: '0.25rem', display: 'block' }}>
                 Note: Previously assigned user may not be in the members list
