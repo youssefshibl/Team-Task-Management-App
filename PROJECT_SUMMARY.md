@@ -53,7 +53,7 @@ A complete full-stack task management application with:
 ## 📁 Project Structure
 
 ```
-task1/
+Team-Task-Management-App//
 ├── frontend/
 │   ├── src/
 │   │   ├── api/
@@ -103,20 +103,20 @@ task1/
 
 1. **Install Frontend Dependencies:**
 ```bash
-cd /home/shebl/task1/frontend
+cd /home/shebl/Team-Task-Management-App//frontend
 npm install
 ```
 
 2. **Start Backend** (in another terminal):
 ```bash
-cd /home/shebl/task1/backend
+cd /home/shebl/Team-Task-Management-App//backend
 npm install
 npm run start:dev
 ```
 
 3. **Start Frontend:**
 ```bash
-cd /home/shebl/task1/frontend
+cd /home/shebl/Team-Task-Management-App//frontend
 npm run dev
 ```
 

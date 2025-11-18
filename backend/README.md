@@ -56,7 +56,7 @@ Before you begin, ensure you have the following installed:
 1. **Clone the repository** (if not already cloned):
 ```bash
 git clone <repository-url>
-cd task1/backend
+cd Team-Task-Management-App//backend
 ```
 
 2. **Install dependencies**:

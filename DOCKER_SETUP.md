@@ -10,7 +10,7 @@ This guide explains how to run the Task Management application using Docker and 
 ## Project Structure
 
 ```
-task1/
+Team-Task-Management-App//
 ├── backend/
 │   ├── Dockerfile
 │   ├── .dockerignore

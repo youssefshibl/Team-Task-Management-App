@@ -1,11 +1,13 @@
 # Task Management System - Complete Setup Guide
 
-This is a full-stack task management application with a Node.js backend and React frontend.
+This is a full-stack task management application with a NestJS backend and React frontend.
+
+> **Note**: For the most up-to-date information, see the main [README.md](./README.md)
 
 ## Project Structure
 
 ```
-task1/
+Team-Task-Management-App//
 ├── backend/           # Node.js + NestJS API
 │   ├── src/          # Source code
 │   ├── package.json
@@ -18,15 +20,49 @@ task1/
 
 ## Prerequisites
 
+### Option 1: Docker (Recommended - Easiest)
+
+- Docker (version 20.10 or higher)
+- Docker Compose (version 2.0 or higher)
+
+### Option 2: Local Development
+
 - Node.js 18+ and npm
 - MongoDB (running locally or via Docker)
 
-## Complete Setup
+## Quick Start with Docker (One Command)
+
+The fastest way to get started:
+
+```bash
+# Navigate to project root
+cd /home/shebl/Team-Task-Management-App/
+
+# Start all services (MongoDB, Backend, Frontend)
+docker-compose up -d
+
+# Seed the database with demo users
+docker-compose exec backend npm run seed:prod
+```
+
+That's it! The application is now running:
+
+- **Frontend**: http://localhost:8080
+- **Backend API**: http://localhost:3000
+- **MongoDB**: localhost:27017
+
+**Note**: All API routes are prefixed with `/api` (e.g., `/api/auth/login`)
+
+For detailed Docker instructions, see [DOCKER_SETUP.md](./DOCKER_SETUP.md)
+
+## Local Development Setup
+
+If you prefer to run without Docker:
 
 ### 1. Clone and Navigate
 
 ```bash
-cd /home/shebl/task1
+cd /home/shebl/Team-Task-Management-App/
 ```
 
 ### 2. Setup Backend
@@ -37,8 +73,12 @@ cd backend
 # Install dependencies
 npm install
 
-# Start MongoDB (if using Docker)
-docker-compose up -d
+# Create .env file (see Environment Variables section below)
+
+# Start MongoDB (if using Docker - run from project root)
+cd ..
+docker-compose up -d mongodb
+cd backend
 
 # Run database seeder (creates demo users)
 npm run seed
@@ -49,12 +89,14 @@ npm run start:dev
 
 Backend will run on `http://localhost:3000`
 
+**Note**: All API routes are prefixed with `/api` (e.g., `/api/auth/login`)
+
 ### 3. Setup Frontend
 
 Open a new terminal:
 
 ```bash
-cd /home/shebl/task1/frontend
+cd /home/shebl/Team-Task-Management-App//frontend
 
 # Install dependencies
 npm install
@@ -72,14 +114,16 @@ Open your browser to `http://localhost:5173`
 ## Demo Credentials
 
 ### Team Lead (Full Access)
-- **Email**: `teamlead@example.com`
+- **Email**: `teamlead1@example.com` (or `teamlead2@example.com`, etc.)
 - **Password**: `password123`
 - **Can**: Manage users, create/edit/delete tasks, assign tasks
 
 ### Member (Limited Access)
-- **Email**: `member1@example.com`
+- **Email**: `member1@example.com` (or `member2@example.com`, etc.)
 - **Password**: `password123`
 - **Can**: View assigned tasks, update task status
+
+**Note**: After running the seeder, you'll have multiple team leads and members. Use any of them to login.
 
 ## Features Overview
 
@@ -120,17 +164,19 @@ backend/API_ENDPOINTS_SUMMARY.md
 ### Backend
 - NestJS (Node.js framework)
 - MongoDB (Database)
-- TypeORM (ORM)
+- Mongoose (ODM - Object Document Mapper)
 - JWT (Authentication)
 - Winston (Logging)
+- Bcrypt (Password hashing)
 
 ### Frontend
 - React 18
 - TypeScript
-- React Query (State management)
+- React Query / TanStack Query (State management)
 - React Router v6 (Routing)
 - Axios (HTTP client)
 - Vite (Build tool)
+- Chakra UI (UI components for searchable select)
 
 ## Development Scripts
 
@@ -162,8 +208,9 @@ lsof -ti:3000 | xargs kill -9
 
 **MongoDB connection error:**
 - Ensure MongoDB is running
+- For Docker: Run `docker-compose up -d mongodb` from project root
 - Check `docker-compose.yaml` configuration
-- Verify connection string in backend
+- Verify connection string in backend `.env` file (should be `MONGODB_URI`, not `MONGO_URI`)
 
 **Missing demo users:**
 ```bash
@@ -178,7 +225,9 @@ Vite will automatically use the next available port (5174, 5175, etc.)
 **API connection error:**
 - Ensure backend is running on port 3000
 - Check browser console for CORS errors
-- Verify proxy configuration in `vite.config.ts`
+- Verify API URL in frontend (should use `/api` prefix or full URL)
+- In development, check proxy configuration in `vite.config.ts`
+- All backend routes are prefixed with `/api` (e.g., `/api/auth/login`)
 
 **Authentication issues:**
 - Clear browser localStorage: `localStorage.clear()`
@@ -208,23 +257,30 @@ src/
 │   ├── auth/          # Authentication module
 │   └── task/          # Task management module
 ├── lib/
-│   ├── entity/        # Database entities
-│   ├── guards/        # Auth guards
-│   ├── decorators/    # Custom decorators
-│   └── services/      # Shared services
-└── main.ts            # Entry point
+│   ├── entity/         # Database entities
+│   ├── guards/         # Auth guards
+│   ├── decorators/     # Custom decorators
+│   ├── services/       # Shared services
+│   ├── repo/           # Repository pattern
+│   ├── filters/        # Exception filters
+│   └── utils/          # Utility functions
+├── seeders/            # Database seeders
+└── main.ts             # Entry point
 ```
 
 ### Frontend Architecture
 ```
 src/
-├── api/               # API client & endpoints
-├── components/        # Reusable components
-├── context/           # React Context (Auth)
-├── pages/             # Page components
-├── styles/            # CSS files
-├── types/             # TypeScript types
-└── App.tsx            # Main app component
+├── api/                # API client & endpoints
+├── components/         # Reusable components
+│   ├── TaskModal.tsx   # Task create/edit modal
+│   ├── SearchableSelect.tsx  # Searchable dropdown
+│   └── ...
+├── context/            # React Context (Auth)
+├── pages/              # Page components
+├── styles/             # CSS files
+├── types/              # TypeScript types
+└── App.tsx             # Main app component
 ```
 
 ## Security Features
@@ -238,66 +294,127 @@ src/
 
 ## API Endpoints Summary
 
+**Base URL**: `http://localhost:3000`  
+**All routes are prefixed with `/api`**
+
 ### Authentication
-- `POST /auth/login` - User login
-- `GET /auth/members` - Get team members (Team Lead only)
+- `POST /api/auth/login` - User login
+- `GET /api/auth/members` - Get team members (Team Lead only)
+- `GET /api/auth/leaders` - Get team leaders
 
 ### Tasks
-- `POST /tasks/create` - Create task (Team Lead)
-- `GET /tasks/get-all` - Get all tasks (Team Lead)
-- `GET /tasks/:id` - Get task by ID (Team Lead)
-- `PUT /tasks/:id` - Update task (Team Lead)
-- `DELETE /tasks/:id` - Delete task (Team Lead)
-- `GET /tasks/assigned-to-me` - Get assigned tasks (Member)
-- `PUT /tasks/:id/status` - Update task status (Member)
+- `POST /api/tasks/create` - Create task (Team Lead)
+- `GET /api/tasks/get-all` - Get all tasks (Team Lead)
+- `GET /api/tasks/:id` - Get task by ID (Team Lead)
+- `PUT /api/tasks/:id` - Update task (Team Lead)
+- `DELETE /api/tasks/:id` - Delete task (Team Lead)
+- `GET /api/tasks/assigned-to-me` - Get assigned tasks (Member)
+- `PUT /api/tasks/:id/status` - Update task status (Member)
+
+### Health Check
+- `GET /api/health` - Health check endpoint
+
+For complete API documentation, see [backend/API_ENDPOINTS_SUMMARY.md](./backend/API_ENDPOINTS_SUMMARY.md)
 
 ## Production Deployment
 
-### Backend
-1. Build: `npm run build`
-2. Deploy `dist/` folder to your server
-3. Set environment variables
+### Option 1: Docker (Recommended)
+
+```bash
+# Build and start all services
+docker-compose up -d
+
+# Seed database
+docker-compose exec backend npm run seed:prod
+```
+
+See [DOCKER_SETUP.md](./DOCKER_SETUP.md) for detailed Docker instructions.
+
+### Option 2: Manual Deployment
+
+#### Backend
+1. Set production environment variables
+2. Build: `npm run build`
+3. Deploy `dist/` folder to your server
 4. Run: `npm run start:prod`
 
-### Frontend
-1. Update API URL in `src/api/client.ts`
+#### Frontend
+1. Update API URL in environment or `src/api/client.ts`
 2. Build: `npm run build`
-3. Deploy `dist/` folder to static hosting (Netlify, Vercel, etc.)
+3. Deploy `dist/` folder to static hosting (Netlify, Vercel, AWS S3, etc.)
 
 ## Environment Variables
 
 ### Backend (.env)
+
+Create a `.env` file in the `backend/` directory:
+
 ```env
-MONGO_URI=mongodb://localhost:27017/taskdb
-JWT_SECRET=your-secret-key
+# MongoDB Configuration
+MONGODB_URI=mongodb://localhost:27017/taskdb
+# Or for Docker:
+# MONGODB_URI=mongodb://admin:admin@mongodb:27017/tasks?authSource=admin
+
+# JWT Configuration
+JWT_SECRET=your-secret-key-here-change-in-production
+
+# Server Configuration
 PORT=3000
+
+# Seeder Configuration (optional)
+SEED_LEADERS_COUNT=5
+SEED_MEMBERS_COUNT=50
+SEED_TASKS_PER_MEMBER=10
 ```
 
 ### Frontend (.env)
+
+Create a `.env` file in the `frontend/` directory (optional):
+
 ```env
+# API URL (optional - defaults to http://localhost:3000 in dev)
 VITE_API_URL=http://localhost:3000
 ```
+
+For Docker, the frontend automatically uses `/api` proxy through nginx.
+
+For detailed environment variable documentation, see [backend/ENV_VARIABLES.md](./backend/ENV_VARIABLES.md)
 
 ## Testing the Application
 
 ### As Team Lead:
-1. Login with team lead credentials
+1. Login with team lead credentials (e.g., `teamlead1@example.com` / `password123`)
 2. Navigate to Users tab → See all members
 3. Navigate to Tasks tab → Click "Add Task"
-4. Fill form and assign to a member
+4. Fill form and assign to a member (use searchable dropdown)
 5. Edit or delete tasks
+6. View all tasks in table format
 
 ### As Member:
-1. Login with member credentials
-2. View assigned tasks
-3. Change task status using dropdown
+1. Login with member credentials (e.g., `member1@example.com` / `password123`)
+2. View assigned tasks in card layout
+3. Change task status using dropdown (Pending → In Progress → Done)
 4. Filter tasks by status
+5. See task details and who assigned it
 
 ## Additional Resources
 
-- [Backend API Documentation](./backend/API_ENDPOINTS_SUMMARY.md)
-- [Frontend Setup Guide](./frontend/SETUP_GUIDE.md)
-- [Frontend Quick Start](./frontend/QUICK_START.md)
+### Main Documentation
+- **[README.md](./README.md)** - Main project overview and quick reference
+- **[DOCKER_SETUP.md](./DOCKER_SETUP.md)** - Complete Docker setup guide
+- **[SEEDING_IN_DOCKER.md](./SEEDING_IN_DOCKER.md)** - Database seeding guide
+- **[PROJECT_SUMMARY.md](./PROJECT_SUMMARY.md)** - Detailed project overview
+
+### Backend Documentation
+- [Backend README](./backend/README.md) - Backend API documentation
+- [API Endpoints Summary](./backend/API_ENDPOINTS_SUMMARY.md) - Complete API reference
+- [Environment Variables](./backend/ENV_VARIABLES.md) - Environment configuration guide
+- [Testing Documentation](./backend/TESTING.md) - Testing guide
+
+### Frontend Documentation
+- [Frontend README](./frontend/README.md) - Frontend documentation
+- [Frontend Setup Guide](./frontend/SETUP_GUIDE.md) - Detailed setup instructions
+- [Frontend Quick Start](./frontend/QUICK_START.md) - Quick start guide
 
 ## Support
 

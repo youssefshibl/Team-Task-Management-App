@@ -223,7 +223,7 @@ npm run lint
 ## 📁 Project Structure
 
 ```
-task1/
+Team-Task-Management-App//
 ├── backend/                 # NestJS Backend
 │   ├── src/
 │   │   ├── modules/
