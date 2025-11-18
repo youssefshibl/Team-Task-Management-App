@@ -41,8 +41,14 @@ cd /home/shebl/Team-Task-Management-App/
 # Start all services (MongoDB, Backend, Frontend)
 docker-compose up -d
 
-# Seed the database with demo users
+# Wait for services to be ready (about 30-40 seconds)
+# Then seed the database with demo users
 docker-compose exec backend npm run seed:prod
+```
+
+**Alternative**: You can also run the seed command directly with node:
+```bash
+docker-compose exec backend node dist/seeders/seed.js
 ```
 
 That's it! The application is now running:
@@ -81,7 +87,14 @@ docker-compose up -d mongodb
 cd backend
 
 # Run database seeder (creates demo users)
+# For development:
 npm run seed
+
+# For production build:
+npm run build
+npm run seed:prod
+# or
+node dist/seeders/seed.js
 
 # Start backend server
 npm run start:dev
@@ -324,11 +337,34 @@ For complete API documentation, see [backend/API_ENDPOINTS_SUMMARY.md](./backend
 # Build and start all services
 docker-compose up -d
 
-# Seed database
+# Wait for services to be ready, then seed database
 docker-compose exec backend npm run seed:prod
 ```
 
-See [DOCKER_SETUP.md](./DOCKER_SETUP.md) for detailed Docker instructions.
+**Production Seeding Options:**
+
+1. **Using npm script (recommended):**
+   ```bash
+   docker-compose exec backend npm run seed:prod
+   ```
+
+2. **Direct node command:**
+   ```bash
+   docker-compose exec backend node dist/seeders/seed.js
+   ```
+
+3. **Interactive shell:**
+   ```bash
+   docker-compose exec backend sh
+   npm run seed:prod
+   # or
+   node dist/seeders/seed.js
+   exit
+   ```
+
+**Note**: The seeder is idempotent - safe to run multiple times. It will skip existing users and tasks.
+
+See [DOCKER_SETUP.md](./DOCKER_SETUP.md) and [SEEDING_IN_DOCKER.md](./SEEDING_IN_DOCKER.md) for detailed instructions.
 
 ### Option 2: Manual Deployment
 
