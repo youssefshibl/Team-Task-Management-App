@@ -48,6 +48,11 @@ This is a complete task management system with two user roles:
 - ✅ Filter tasks by status
 - ✅ See task details and assignment information
 
+
+## 🧊 Demo
+
+[![Screenshot from 2024-07-13 18-18-21](https://github.com/user-attachments/assets/ab5459d2-ec94-479b-a4b4-96b743a7ff32)](https://github.com/user-attachments/assets/ab5459d2-ec94-479b-a4b4-96b743a7ff32)
+
 ## 🛠 Tech Stack
 
 ### Backend
